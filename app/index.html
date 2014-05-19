@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" ng-app="app">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -9,6 +9,7 @@
 		<!-- Bootstrap -->
 		<link href="css/bootstrap.min.css" rel="stylesheet" />
 		<link href="css/bootstrap.theme.min.css" rel="stylesheet" />
+		<link rel="stylesheet" href="css/app.css" />
 
 		<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
 		<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -17,16 +18,156 @@
 		<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
 		<![endif]-->
 	</head>
-	<body>
+	<body ng-controller="MainController">
+		<nav id="menu-fixo">
+			<ul class="nav nav-pills">
+				<li><button class="btn btn-primary brn-lg" data-toggle="modal" data-target="#criar-topico"><span class="glyphicon glyphicon-plus"></span> Criar tópico</a></li>
+				<li></li>
+			</ul>
+		</nav>
+
 		<div class="container">
-			<h1>Fórum de Discussão</h1>
+			<header>
+				<h1 class="pull-left">Fórum de Discussão</h1>
+
+				<div id="assuntos" class="pull-right">
+					<p><strong>Assuntos mais procurados</strong></p>
+					<form class="form-inline" role="form">
+						<div class="checkbox-inline">
+							<input ng-model="searchCheckbox.categoria1" type="checkbox" ng-true-value="Filmes" ng-false-value="" name="filmes" />
+							Filmes
+						</div>
+						<div class="checkbox-inline">
+							<input ng-model="searchCheckbox.categoria2" type="checkbox" ng-true-value="Jogos" ng-false-value="" name="jogos" />
+							Jogos
+						</div>
+						<div class="checkbox-inline">
+							<input ng-model="searchCheckbox.categoria3" type="checkbox" ng-true-value="Séries" ng-false-value="" name="series" />
+							Séries
+						</div>
+
+						<div class="form-group marginl10">
+							<select name="assuntos" class="form-control">Assuntos
+								<option value="">Assunto 1</option>
+								<option value="">Assunto 2</option>
+								<option value="">Assunto 3</option>
+							</select>
+						</div>
+					</form>
+				</div>
+			</header>
+
+			<div class="clear"></div>
 			<hr />
 
+			<div id="conteudo">
+				
+				<h2>{{searchCheckbox.categoria1}} {{searchCheckbox.categoria2}} {{searchCheckbox.categoria3}}</h2>
+				<br />
+
+				<div class="post-it" ng-repeat="post in posts | filter: searchCheckbox.categoria1 | filter: searchCheckbox.categoria2 | filter: searchCheckbox.categoria3" ng-class="{ last: ($index + 1) % 3 == 0 }">
+					<div class="border-post-it">
+						<div class="header-post-it">
+							<h3><a href="#" ng-click="abrirPost($index)"><span class="glyphicon glyphicon-tag"></span> {{post.titulo}}</a></h3>
+							<hr />
+						</div>
+
+						<div class="conteudo-post-it">
+							<p>{{post.texto | textLimit}}</p>
+						</div>
+					</div>
+
+					<div class="user-post-it pull-right">
+						<small><span class="glyphicon glyphicon-user"></span> user1234</small>
+					</div>
+				</div>
+
+				<div class="clear"></div>
+			</div>
+		</div>
+
+		<div class="modal fade" id="criar-topico" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+						<h4 class="modal-title" id="myModalLabel">Criar tópico</h4>
+					</div>
+					
+					<div class="modal-body">
+						<form role="form">
+							<div class="form-group">
+								<label for="titulo">Título</label>
+								<input ng-model="post.titulo" type="text" name="titulo" class="form-control" placeholder="Digite o título" />
+							</div>
+							<div class="form-group">
+								<label for="texto">Texto</label>
+								<textarea ng-model="post.texto" name="texto" class="form-control" rows="20" placeholder="Digite o texto"></textarea>
+							</div>
+							<div class="form-group">
+								<label for="categoria">Categoria</label>
+								<select name="categoria" ng-model="post.categoria" id="categoria" class="form-control">
+									<option value="filme">Filmes</option>
+									<option value="jogo">Jogos</option>
+									<option value="serie">Séries</option>
+								</select>
+							</div>
+						</form>
+					</div>
+					
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+						<button type="button" class="btn btn-primary" ng-click="criarPost()">Criar</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="modal fade" id="detalhes-topico" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+						<h4 class="modal-title" id="myModalLabel">{{postView.titulo}}</h4>
+					</div>
+					
+					<div class="modal-body">
+						<p>{{postView.texto}}</p>
+					</div>
+
+					<div class="pull-left margint20 marginl10">
+						<h4>Respostas</h4><br />
+
+						<div class="panel panel-default" class="pull-left" ng-repeat="reply in replies">
+							<div class="panel-heading"><span class="glyphicon glyphicon-user"></span> {{reply.user}}</div>
+							<div class="panel-body">
+								{{reply.texto}}
+							</div>
+						</div>
+
+						<form role="form">
+							<div class="form-group">
+								<label for="texto">Texto</label>
+ 								<input ng-model="reply.texto" type="text" name="texto" id="texto" class="form-control" placeholder="Digite o texto" />
+
+ 								<button class="btn btn-primary margint10" ng-click="adicionarReply()">Responder</button>
+							</div>
+						</form>
+					</div>
+					
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+					</div>
+				</div>
+			</div>
 		</div>
 
 		<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
 		<script src="js/jquery.js"></script>
 		<!-- Include all compiled plugins (below), or include individual files as needed -->
 		<script src="js/bootstrap.min.js"></script>
+
+		<script src="js/angular.js"></script>
+		<script src="js/controller.js"></script>
 	</body>
 </html>
